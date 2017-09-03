@@ -4,7 +4,7 @@ const path = require("path");
 const url = require("url");
 const zip = require("zlib");
 const process = require("process");
-const logger = require("./logger");
+const log = require("./logger");
 
 
 const defaultParams = {
@@ -15,31 +15,33 @@ const defaultParams = {
 let procParams = Object.assign(defaultParams);
 
 
-logger(">>>",process.argv,"<<<<<<<<");
+//log(">>>",process.argv,"<<<<<<<<");
 
 
 if( !!process.argv[2] ){
     if( /^\d{4,5}$/g.test(process.argv[2]) ){
         procParams.PORT = +process.argv[2];
     }else {
-        fs.accessSync(procParams.BASE = procParams.BASE + process.argv[2].trim());
+        fs.accessSync(procParams.BASE = 
+            path.resolve(procParams.BASE + process.argv[2].trim())
+        );
     };
     if( process.argv[3] && /^\d{4,5}$/g.test(process.argv[3]) ){
         procParams.PORT = +process.argv[3];
     }
     
 };
-//possibility of more proc args
+//possibility of more proc args and more complex algo wuld b nidid
 
-
+log("running on port ", log.q(procParams.PORT,`'`), " in directory ", log.q(procParams.BASE,`'`), " with start file ", log.q(procParams.FILE,`'`) );
 
 
 
 const mimeFns = {
-    "text": (ext) => ext != "js"? "text/" + ext : "text/javascript"
+    "text": (ext) => ext != "js" ? "text/" + ext : "text/javascript"
     ,"image": (ext) => "image/" + ext
     ,undefined: () => undefined
-}
+};
 
 const mimeTypes = {
     "html": "text"
@@ -48,7 +50,7 @@ const mimeTypes = {
     ,"png": "image"
     ,"js":"text"
     ,"css":"text"
-}
+};
 
 
 
@@ -68,12 +70,13 @@ function checkFile(somepath) {
     return (resolve, reject) =>{
         fs.access(somepath,fs.constants.R_OK, err =>{
             if( err ){             
-                logger(`no such file or not available: ${somepath}. Got: ${err}  ` );
+                log(`no such file or not available: ${somepath}. Got: ${err}  ` );
                 reject(err);
+                return;//prevent to run rest of code
             };
             if( !fs.lstatSync(somepath).isFile() ){             
                 reject(new Error(`"${somepath}" is not a filename`));
-                return;//prevent to run rest of code
+                return;//
              };    
             resolve();
         });        
@@ -82,7 +85,7 @@ function checkFile(somepath) {
 
 
 function sendError(res,err){
-    logger(`got: ${err}`)
+    log(`got: ${err}`);
     res.writeHead(404,{"Content-Type": "text/plain"});
     res.write(`fatal error\n${err}`);
     if(!res.finished){ 
@@ -103,24 +106,22 @@ function sendFile(res,filepath){
         const raw = fs.createReadStream(filepath);
         raw.pipe(zip.createGzip()).pipe(res);
         
-        setImmediate(()=>{ //runs at the end of eventloop ie after i/o
-            logger("file sent: " + filepath);
+        setImmediate(()=>{ //runs at the end of eventloop i.e. after i/o
+            log("file sent: " + filepath);
             resolve();
             return;
         });
     });
 };
 
-/* 
 
-http.createServer expects similar function:
-"""
-function (req, res){
-    //code
-}
-"""
+//http.createServer expects similar function:
+//"""
+//function (req, res){
+//    //code
+//}
+//"""
 
-*/
 http.createServer(servercallback).listen( procParams.PORT );
 
 

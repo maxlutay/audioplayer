@@ -1,6 +1,8 @@
 *
 !src/
 !src/*
+!scripts/
+!scripts/*
 
 !README.md
 !.gitignore

@@ -4,7 +4,10 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "npm run test"
+    "w": "webpack --watch",
+    "b": "webpack",
+    "s":"node ./scripts/nodeserver.js",
+    "sp":"node ./scripts/pyserver.js"
   },
   "author": "Max Lutay",
   "license": "UNLICENSED",

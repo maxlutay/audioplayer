@@ -1,19 +1,20 @@
 const logger = (...rest) =>{
-    console.log.apply(null,[logger.timestamp()].concat(rest) );
+    console.log.apply(null,[logger.stamp()].concat(rest) );
 };
 
 
-logger.timestamp = () =>{
+logger.stamp = () =>{
     const date = new Date();
-    return `${date.toLocaleString()}\'${date.getMilliseconds()} - `;
+    return `${date.toLocaleString()}\'${date.getMilliseconds()}\t- `;
 };
 
 
-logger.return = (...rest) =>{
-    console.log.apply(null,[logger.timestamp()].concat(rest));
+logger.ret = (...rest) =>{
+    console.log.apply(null,[logger.stamp()].concat(rest));
     return rest.length === 1 ? rest[0] : rest;
 };
 
+logger.q = (str,quo = `"`) => `${quo}${str}${quo}`;
 
 
 module.exports = logger;
