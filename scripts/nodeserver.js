@@ -21,10 +21,14 @@ let procParams = Object.assign(defaultParams);
 if( !!process.argv[2] ){
     if( /^\d{4,5}$/g.test(process.argv[2]) ){
         procParams.PORT = +process.argv[2];
+        if ( !!process.argv[3] ){
+            fs.accessSync(procParams.BASE = path.resolve(procParams.BASE + process.argv[3].trim())
+            );
+        };
     }else {
-        fs.accessSync(procParams.BASE = 
-            path.resolve(procParams.BASE + process.argv[2].trim())
+        fs.accessSync(procParams.BASE = path.resolve(procParams.BASE + process.argv[2].trim())
         );
+        log(procParams.BASE);
     };
     if( process.argv[3] && /^\d{4,5}$/g.test(process.argv[3]) ){
         procParams.PORT = +process.argv[3];
