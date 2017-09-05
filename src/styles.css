@@ -7,12 +7,81 @@ body, body * {
     box-sizing: border-box;  
 }
 
-
+/* .app> * {
+    border: 2px dashed black;    
+} */
 
 .app{
-    background: whitesmoke;
-    min-width: 100vw;
-    min-height: 100vh;
+    background: #2B3E8A;
+    width: 100%;
+    height: 100vh;
+    --header-height: 15%;
+    --player-height: calc(10% + var(--timeline-height));
+    --player-height-hovered: calc(10% + var(--timeline-height-hovered));
+    --timeline-height: 6px;
+    --timeline-height-hovered: 20px;
+    --content-height: calc(100% - var(--header-height) - var(--player-height));
 }
 
 
+.player{
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: var(--player-height);
+    background: #DBDFF4;
+}
+
+.player_hovered{
+    height: var(--player-height-hovered);
+}
+
+.player__timeline{
+    position: relative;
+    bottom: var(--timeline-height);
+    width: 100%;
+    height: var(--timeline-height);
+    transition: height 300ms, bottom 300ms;
+}
+
+.player__timeline_hovered{
+    height: var(--timeline-height-hovered);
+    bottom: var(--timeline-height-hovered);
+}
+
+
+.progress{
+    background: white;
+    position: relative;
+}
+.progress__load
+,.progress__play {
+    height: 100%;
+    position: absolute;
+}
+.progress__load{
+    background: #B8B8B8;
+    z-index: 9;
+}
+
+.progress__play{
+    background: #FE7B4B;
+    z-index: 10;
+}
+
+
+.tracks{
+    width: 100%;
+    background: #44BD90;
+    height: var(--content-height);
+
+}
+
+
+
+
+.header{
+    height: var(--header-height);
+    background: #DBDFF4;
+}
