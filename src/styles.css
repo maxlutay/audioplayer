@@ -19,7 +19,7 @@ body, body * {
     --player-height: calc(10% + var(--timeline-height));
     --player-height-hovered: calc(10% + var(--timeline-height-hovered));
     --timeline-height: 6px;
-    --timeline-height-hovered: 20px;
+    --timeline-height-hovered: 25px;
     --content-height: calc(100% - var(--header-height) - var(--player-height));
 }
 
@@ -42,7 +42,7 @@ body, body * {
     bottom: var(--timeline-height);
     width: 100%;
     height: var(--timeline-height);
-    transition: height 300ms, bottom 300ms;
+    transition: height 200ms, bottom 200ms;
 }
 
 .player__timeline_hovered{
@@ -54,6 +54,8 @@ body, body * {
 .progress{
     background: white;
     position: relative;
+    cursor: pointer;
+    user-select: none;
 }
 .progress__load
 ,.progress__play {
@@ -68,6 +70,37 @@ body, body * {
 .progress__play{
     background: #FE7B4B;
     z-index: 10;
+}
+
+.progress__current
+,.progress__total {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    z-index: 11;
+    opacity: 0; 
+    transition: opacity 50ms 0ms;
+    color:  black;
+    height: 100%;
+}
+.progress__current{
+    left: 0;
+}
+.progress__total{
+    right: 0;
+}
+.player__timeline_hovered  .progress__current
+,.player__timeline_hovered .progress__total
+{
+    opacity: 1;
+    transition: opacity 150ms 100ms;
+    
+}
+
+
+.player__controls{
+    height: 100%;
+    width: 100%;
 }
 
 

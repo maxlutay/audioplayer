@@ -1,5 +1,5 @@
 const Vue = require("vue/dist/vue.js");
-require("./header");
+require("./topping");
 require("./player");
 require("./feed");
 
@@ -11,7 +11,7 @@ var app = new Vue({
         ,logged: false
         ,logindata: {}
         ,cache: {}
-        
+
     }
 });
 
