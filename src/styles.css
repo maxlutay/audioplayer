@@ -16,8 +16,7 @@ body, body * {
     width: 100%;
     height: 100vh;
     --header-height: 15%;
-    --player-height: calc(10% + var(--timeline-height));
-    --player-height-hovered: calc(10% + var(--timeline-height-hovered));
+    --player-height: 10vh;
     --timeline-height: 6px;
     --timeline-height-hovered: 25px;
     --content-height: calc(100% - var(--header-height) - var(--player-height));
@@ -30,16 +29,15 @@ body, body * {
     bottom: 0;
     left: 0;
     height: var(--player-height);
-    background: #DBDFF4;
+    background: #C4D7FF;
+    display: flex;
+    justify-content: space-between;
 }
 
-.player_hovered{
-    height: var(--player-height-hovered);
-}
 
 .player__timeline{
-    position: relative;
-    bottom: var(--timeline-height);
+    position: fixed;
+    bottom: var(--player-height);
     width: 100%;
     height: var(--timeline-height);
     transition: height 200ms, bottom 200ms;
@@ -47,13 +45,11 @@ body, body * {
 
 .player__timeline_hovered{
     height: var(--timeline-height-hovered);
-    bottom: var(--timeline-height-hovered);
 }
 
 
 .progress{
-    background: white;
-    position: relative;
+    background: #8BDDBD;
     cursor: pointer;
     user-select: none;
 }
@@ -63,7 +59,7 @@ body, body * {
     position: absolute;
 }
 .progress__load{
-    background: #B8B8B8;
+    background: #DEF1FF;
     z-index: 9;
 }
 
@@ -97,12 +93,38 @@ body, body * {
     
 }
 
+.player__control{
+    height: 6vh;
+    width: 6vh;
+    background: #2B3E8A;
+    border: 1px dashed black;
+    cursor: pointer;
+    margin: 1vh;
+    transition: background 200ms   ;
+}
+
+.player__control:hover{
+    background: #FE7B4B;
+}
 
 .player__controls{
     height: 100%;
-    width: 100%;
+    width: fit-content;
+    padding: 1vh;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-grow:0;
 }
 
+.player__controls_left{
+    justify-content: flex-start;
+}
+
+
+.player__controls_right{
+    justify-content: flex-end;
+}
 
 .tracks{
     width: 100%;
@@ -116,5 +138,5 @@ body, body * {
 
 .header{
     height: var(--header-height);
-    background: #DBDFF4;
+    background: #C4D7FF;
 }
