@@ -59,14 +59,14 @@ body, body * {
     position: absolute;
 }
 .progress__load{
-    background: #DEF1FF;
+    background:/*  #2B3E8A; */#DEF1FF;
     z-index: 9;
 }
 
 .progress__play{
     background: #FE7B4B;
     z-index: 10;
-    transition: width 500ms;
+    transition: width 300ms;
 }
 
 .progress__current
