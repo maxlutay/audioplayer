@@ -66,6 +66,7 @@ body, body * {
 .progress__play{
     background: #FE7B4B;
     z-index: 10;
+    transition: width 500ms;
 }
 
 .progress__current
@@ -125,6 +126,14 @@ body, body * {
 .player__controls_right{
     justify-content: flex-end;
 }
+
+
+
+.player__core{
+    position: absolute;
+}
+
+
 
 .tracks{
     width: 100%;

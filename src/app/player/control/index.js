@@ -1,7 +1,8 @@
 module.exports = {
     template: `
     <div class="player__control" @click="pass(event)" >
-        <img src="iconpath">
+        <img :src="iconpath">
+        <slot></slot>
     </div>
     `
     ,props:[
