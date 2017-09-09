@@ -5,118 +5,144 @@ const Vue = require("vue/dist/vue.js");
 Vue.component("player",{
     template: `
         <div class="player" 
-            @mouseenter="flags.bold=true" 
-            @mouseleave="flags.bold=false"
-            >
+        @mouseenter="status.bold=true" 
+        @mouseleave="status.bold=false"
+        >
             <timebar class="player__timeline" 
-                    :class="{player__timeline_hovered:flags.bold}"
-                    :loadprogress="toStrPercentage(progress.load)"
-                    :playprogress="toStrPercentage(progress.play)"
-                    :length="getlength(current)"
-                    @timeclick="start"
-                    >
-            </timebar>
-            <div class="player__controls player__controls_left">
-                <prev event="prev" 
-                      @prev="prev">
-                      prev
-                </prev>
-                <pause event="pausetoggle" 
-                       @pausetoggle="pausetoggle" >
-                       {{flags.pause ? "play" : "pause"}}
-                </pause>
-                <next  event="next"
-                       @next="next">
-                       next
-                </next>
+            :class="{player__timeline_hovered:status.bold}"
+            ></timebar>
+            <div class="player__controls player__controls_left"
+            >
+                <ctrl @click="prev()">prev</ctrl>
+                <ctrl @click="toggle"
+                > 
+                    {{ (!status.pause ? "play" : "pause") }}
+                </ctrl>
+                <ctrl @click.native="next">next</ctrl>
             </div>
-            <div class="player__track">
-            {{current}}
+            <div class="player__track"
+            >
+            {{status.current}}
             </div>
-            <div class="player__controls player__controls_right">
-                <mix event="mixtoggl">mix</mix>
-                <repeat event="repeattoggl">repeat</repeat>
-                <volume event="mute">mute</volume>
+            <div class="player__controls player__controls_right"
+            >
+                <ctrl @click="mix">mix</ctrl>
+                <ctrl @click="repeat">repeat</ctrl>
+                <ctrl @click="mute">volume</ctrl>
             </div>
-            <core ref="audio" :url="getsrc(current)" 
-            @timeupdate.native="playupdate"
-            @canplay.native="loadupdate();tracksetup()"  
-            @progress.native="loadupdate" 
-            @ended.native="next" 
-            @audioupdated="coreupdate($event)"></core>
-        </div>
-    `
-    ,components: {
-        timebar:require("./timebar")
-
-        ,prev:  require("./control")
-        /* ,play:  require("./control") */
-        ,pause: require("./control")
-        ,next:  require("./control")
-        ,mix:   require("./control")
-        ,repeat:require("./control")
-        ,volume:require("./control")
-
-        ,core:  require("./core")
-    }
-/*     ,props: [
-        ""
-    ] */
-    ,data: function(){
+            <core 
+            ref="audio"
+            :url="gurl()" 
+            @ended="next"
+            ></core>
+            </div>
+            `
+            ,components: {
+                timebar:require("./timebar")
+                ,ctrl:  require("./control")
+                ,core:  require("./core")
+            }
+            
+/*             @timeupdate=""
+            @canplay=""  
+ */    ,data: function(){
         return {
             list:{
                 id:0
-                ,length:0
+            //    ,length:0
                 ,tracks:[
                     {
                         id:1000
                         ,name:"Aaaa"
                         ,performer:"Bbbb"
                         //just example url
-                        ,url:"https://s06vla.storage.yandex.net/get-mp3/3b0f0139c60b16bebb6ffdee2d96afde/0005589eb4ea9649/music/14/4/data-0.13:49136014019:2649443?track-id=36620136&play=false"
-                        ,length:"0:00"
+                        ,url:"/data-0.mp3"
+                        ,length:undefined
                     }
                     ,{
                         id:1001
                         ,name:"Cccc"
                         ,performer:"Dddd"
-                        ,url:"https://s06vla.storage.yandex.net/get-mp3/a0f5c0c01d17bf52340d727f321f0fc2/0005589eb8b679b0/music/10/10/data-0.12:24226483033:2367320?track-id=36620139&play=false"
-                        ,length:"0:00"
+                        ,url:"/data-0 (1).mp3"
+                        ,length:undefined
                     }
                     ,{
                         id:1002
                         ,name:"Eeee"
                         ,performer:"Ffff"
-                        ,url:"https://s61f.storage.yandex.net/get-mp3/4ea4408c9c3c022d7a9cff1399509101/0005589d36f19edf/music/28/7/data-0.19:19052974813:3952848?track-id=29566770&play=false"
-                        ,length:"0:00"
+                        ,url:"/data-0 (2).mp3" 
+                        ,length:6582
                     }
                 ]
             }
-            ,flags:{
+            ,status:{
                 bold:false
                 ,pause:true
                 ,volume:100
                 ,mix: false
                 ,repeat: false
+                ,deciding:false 
+                
+                ,current: -1
+                
+                ,progress:{
+                    load: 0
+                    ,play:0
+                }
             }
-            ,progress:{
-                load: 0
-                ,play:0
-            }
-            ,current: -1
-            ,element: null
+            ,element:null
         };
     }
+    
+
+    ,updated: function() {
+        this.$nextTick( () => {
+            this.element = this.$refs.audio.$el;
+        });
+    }
     ,methods: {
+        log:(...arg) => console.log.call(null,["log:"].concat(arg).join())
+        ,next: function() {
+            let c = this.status.current //link
+            ,   l = this.list.tracks.length;
+            this.status.current = c>=0 && c < (l - 1) ? c+1 : 0;
+//            this.start(0);
+        }
+        ,toggle: function() {
+            let flag = status.pause;
+
+        }
+        ,prev: function() {
+            let c = this.status.current 
+            ,   l = this.list.tracks.length;
+            this.status.current = c > 0 ? c-1 : l-1;
+            //            this.start(0);
+        }
+        ,mix:()=>undefined
+        ,repeat:()=>undefined
+        ,mute:()=>undefined
+        
+        ,gurl: function () {
+            let rs = this.list.tracks[this.status.current];
+            console.log("gurl", rs);            
+            return !!rs ? rs.url : "";
+        }
+ 
+        /* 
         toStrPercentage: (num) => (num*100).toFixed(2) + "%"
         ,percentage: (val,base) => val/base
+        ,settime: function(percent) {
+            console.log(this.list.tracks[this.current].length);
+            this.element.$el.currentTime = percent*this.list.tracks[this.current].length;
+        }
         ,getlength:function(c= this.current) {
-            return c < 0 ?  "x:xx" : this.list.tracks[c].length ;
+            return c < 0 ?  "x:xx" : this.formatrange(this.list.tracks[c].length) ;
         }
         ,getsrc:function(c=this.current) {
+            console.log("get src");
             return c < 0 ? "" : this.list.tracks[c].url;
         }
-        ,formatrange:function(sec,tail) {
+        ,formatrange:function(sec = 0) {
             return `${Math.floor(sec/60)|| "0"}:${Math.floor(sec%60)}`
         }
         ,unformatrange:function(str) {
@@ -124,17 +150,18 @@ Vue.component("player",{
             return arr.length == 1 ? arr[0] : (+arr[0]*60 + +arr[1]);
         }
         ,start:function(percent) {
-            //async load
-            this.flags.pause = false;
-            if(!this.element){this.element = this.$refs.audio;};
-            if(this.current < 0){ this.current = 0; };            
+                      
             this.load(this.list.tracks[this.current].url);
             if(!!percent){ 
                 this.element.$el.pause();
-                console.log(this.unformatrange(this.list.tracks[this.current].length));
-                this.element.$el.currentTime = percent* (this.unformatrange(this.list.tracks[this.current].length));
+
+                this.element.$el.currentTime = percent* this.list.tracks[this.current].length;
                 console.log(this.element.$el.currentTime, this.element.$el.duration);
             };
+            if(percent == 0){
+                this.element.$el.currentTime = 0;
+            };
+            this.flags.pause = false;
             this.element.$el.play();
           
             //
@@ -149,20 +176,19 @@ Vue.component("player",{
             console.log(`loading ${url}`);
         }
         ,next: function() {
-            this.current = (this.current > this.list.tracks.length - 2 ? 
-                                                          0 :
+            this.current = (this.current > this.list.tracks.length - 2) ?                                                 0 :
                                              this.current + 1 
-                          );
+                          ;
             this.start(0);
         }
         ,prev: function() {
-            this.current = ( this.current < 1 ? 
+            this.current = ( this.current < 1) ? 
                 this.list.tracks.length - 1 :
                            this.current - 1
-                          );
+                          ;
             this.start(0);
         }
-        ,pausetoggle: function() {
+        ,ptoggle: function() {
             if (this.flags.pause){ 
                 this.start(this.progress.play);
             }else{
@@ -173,14 +199,17 @@ Vue.component("player",{
             console.log(this.element = audioelement);
         }
         ,tracksetup:function() {
-            this.list.tracks[this.current].length = `${this.formatrange(this.$refs.audio.$el.duration)}`;
+            this.list.tracks[this.current].length = this.$refs.audio.$el.duration;
         }
         ,playupdate:function(){
-            this.progress.play = this.$refs.audio.$el.currentTime/this.$refs.audio.$el.duration;//ms -> %
+             if(!this.deciding){ 
+    //no need for throttle
+                this.progress.play = this.$refs.audio.$el.currentTime/this.$refs.audio.$el.duration;//ms -> %
+             }; 
         }
         ,loadupdate:function() {
             this.progress.load = this.$refs.audio.$el.buffered.end(this.$refs.audio.$el.buffered.length - 1)/this.$refs.audio.$el.duration;//ms -> %
-        }
-        ,log:(...arg) => console.log.call(null,["log:"].concat(arg).join())
+        } */
+
     }
 });

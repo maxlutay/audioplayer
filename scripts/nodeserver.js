@@ -44,6 +44,7 @@ log("running on port ", log.q(procParams.PORT,`'`), " in directory ", log.q(proc
 const mimeFns = {
     "text": (ext) => ext != "js" ? "text/" + ext : "text/javascript"
     ,"image": (ext) => "image/" + ext
+    ,"audio":() => "audio/mpeg"
     ,undefined: () => undefined
 };
 
@@ -54,13 +55,14 @@ const mimeTypes = {
     ,"png": "image"
     ,"js":"text"
     ,"css":"text"
+    ,"mp3":"audio"
 };
 
 
 
 
 const servercallback = (clReq,seRes) => {
-    let filepath = path.join( procParams.BASE ,url.parse(clReq.url).pathname.slice(1) || procParams.FILE );
+    let filepath = path.join( procParams.BASE ,decodeURI(url.parse(clReq.url).pathname.slice(1)) || procParams.FILE );
     return new Promise(
         checkFile(filepath) //got function from factory
     ).then( ()  => 
@@ -102,14 +104,31 @@ function sendFile(res,filepath){
     return new Promise((resolve,reject) => {
 
         const ext = path.extname(filepath).slice(1);
-        res.writeHead(200,{
-            "Content-Type": mimeFns[mimeTypes[ext]](ext) || "text/plain",
-            "Content-Encoding": "gzip"
-        });
 
         const raw = fs.createReadStream(filepath);
-        raw.pipe(zip.createGzip()).pipe(res);
-        
+
+        if(mimeFns[mimeTypes[ext]](ext)!== "audio/mpeg"){
+
+            res.writeHead(200,{
+                "Content-Type": mimeFns[mimeTypes[ext]](ext) || "text/plain"
+                ,"Content-Encoding": "gzip"
+            });
+
+            raw
+            .pipe(zip.createGzip())
+            .pipe(res);
+        }else{
+            res.writeHead(206,{
+                "Content-Type": mimeFns[mimeTypes[ext]](ext) || "text/plain"
+                //,"Content-Encoding": "gzip"
+                ,"Accept-Ranges":"bytes"
+            });
+
+            raw
+            //.pipe(zip.createGzip())
+            .pipe(res);
+        };
+
         setImmediate(()=>{ //runs at the end of eventloop i.e. after i/o
             log("file sent: " + filepath);
             resolve();

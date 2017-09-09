@@ -22,7 +22,7 @@ module.exports = {
                 ]
             }
             ,{
-                test: /\.((html)|(jpe?g)|(png))$/
+                test: /\.((html)|(jpe?g)|(png)|(mp3))$/
                 ,loader: "file-loader"
                 ,options: {
                     name: "[name].[ext]"

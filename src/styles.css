@@ -49,7 +49,7 @@ body, body * {
 
 
 .progress{
-    background: #8BDDBD;
+    background: #87FFCE;
     cursor: pointer;
     user-select: none;
 }
@@ -59,12 +59,12 @@ body, body * {
     position: absolute;
 }
 .progress__load{
-    background:/*  #2B3E8A; */#DEF1FF;
+    background: #72DFB5 ;
     z-index: 9;
 }
 
 .progress__play{
-    background: #FE7B4B;
+    background: #FE7C4D;
     z-index: 10;
     transition: width 300ms;
 }
