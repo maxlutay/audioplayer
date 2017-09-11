@@ -1,44 +1,10 @@
-const http = require("http");
 const fs = require("fs");
+const zip = require("zlib");
 const path = require("path");
 const url = require("url");
-const zip = require("zlib");
-const process = require("process");
+
 const log = require("./logger");
-
-
-const defaultParams = {
-    PORT: 8000
-    ,BASE: process.cwd()
-    ,FILE: "index.html"
-};
-let procParams = Object.assign(defaultParams);
-
-
-//log(">>>",process.argv,"<<<<<<<<");
-
-
-if( !!process.argv[2] ){
-    if( /^\d{4,5}$/g.test(process.argv[2]) ){
-        procParams.PORT = +process.argv[2];
-        if ( !!process.argv[3] ){
-            fs.accessSync(procParams.BASE = path.resolve(procParams.BASE + process.argv[3].trim())
-            );
-        };
-    }else {
-        fs.accessSync(procParams.BASE = path.resolve(procParams.BASE + process.argv[2].trim())
-        );
-        log(procParams.BASE);
-    };
-    if( process.argv[3] && /^\d{4,5}$/g.test(process.argv[3]) ){
-        procParams.PORT = +process.argv[3];
-    }
-    
-};
-//possibility of more proc args and more complex algo wuld b nidid
-
-log("running on port ", log.q(procParams.PORT,`'`), " in directory ", log.q(procParams.BASE,`'`), " with start file ", log.q(procParams.FILE,`'`) );
-
+const sendError = require("./error");
 
 
 
@@ -54,9 +20,14 @@ const mimes = {
 
 
 
-
-const servercallback = (clReq,seRes) => {
-    let filepath = path.join( procParams.BASE ,decodeURI(url.parse(clReq.url).pathname.slice(1)) || procParams.FILE );
+const callback = (clReq,seRes) => {
+    let filepath = path.join( global.procParams.BASE 
+                              ,decodeURI(
+                                  url.parse(clReq.url)
+                                     .pathname
+                                     .slice(1)
+                                ) || global.procParams.FILE 
+                            );
     return new Promise(
         checkFile(filepath) //got function from factory
     ).then( (stat)  => sendFile(
@@ -78,7 +49,7 @@ function checkFile(somepath) {
                 reject(err);
                 return;//prevent to run rest of code
             };
-
+            
 
             if( !(lstatobj = fs.lstatSync(somepath)).isFile() ){             
                 reject(new Error(`"${somepath}" is not a filename`));
@@ -90,14 +61,6 @@ function checkFile(somepath) {
 };
 
 
-function sendError(res,err){
-    log(`got: ${err}`);
-    res.writeHead(404,{"Content-Type": "text/plain"});
-    res.write(`fatal error\n${err}`);
-    if(!res.finished){ 
-        res.end(); 
-    };
-};
 
 
 
@@ -136,9 +99,10 @@ function parseHttpRange (rangestr) {
     return  !rangestr   ? 
             []          :
             rangestr.trim()
-                    .replace("bytes=","")
-                    .split("-")
-                    .map( s =>+s );
+                    .replace("bytes=","")//"bytes=0-"->"0-"      
+                    .split("-")         // "0-"-> ["0",""]
+                    .map( s =>+s );     // ""  -> 0 
+                                        // "0" -> 0
 };
 
 function fileMedia (ct,statsf,res,req) {
@@ -159,25 +123,8 @@ function fileMedia (ct,statsf,res,req) {
 
     raw
     .pipe(res);
-    return;
-
 };    
 
- 
 
 
-
-//http.createServer expects similar function:
-//"""
-//function (req, res){
-//    //code
-//}
-//"""
-
-http.createServer(servercallback).listen( procParams.PORT );
-
-
-
-
-
-
+module.exports = callback;

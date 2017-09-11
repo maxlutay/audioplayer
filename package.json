@@ -6,7 +6,7 @@
   "scripts": {
     "w": "webpack --watch",
     "b": "webpack",
-    "s":"node ./scripts/nodeserver.js"
+    "s":"node ./server/nodeserver.js"
   },
   "author": "Max Lutay",
   "license": "UNLICENSED",
