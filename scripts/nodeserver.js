@@ -41,21 +41,15 @@ log("running on port ", log.q(procParams.PORT,`'`), " in directory ", log.q(proc
 
 
 
-const mimeFns = {
-    "text": (ext) => ext != "js" ? "text/" + ext : "text/javascript"
-    ,"image": (ext) => "image/" + ext
-    ,"audio":() => "audio/mpeg"
-    ,undefined: () => undefined
-};
 
-const mimeTypes = {
-    "html": "text"
-    ,"jpg": "image"
-    ,"jpeg":"image"
-    ,"png": "image"
-    ,"js":"text"
-    ,"css":"text"
-    ,"mp3":"audio"
+const mimes = {
+    "html": fileSimple.bind(null,"text/html")
+    ,"jpg": fileSimple.bind(null,"image/jpg")
+    ,"jpeg":fileSimple.bind(null,"image/jpeg")
+    ,"png": fileSimple.bind(null,"image/png")
+    ,"js":  fileSimple.bind(null,"text/javascript")
+    ,"css": fileSimple.bind(null,"text/css")
+    ,"mp3": fileMedia.bind(null,"audio/mpeg")
 };
 
 
@@ -65,26 +59,32 @@ const servercallback = (clReq,seRes) => {
     let filepath = path.join( procParams.BASE ,decodeURI(url.parse(clReq.url).pathname.slice(1)) || procParams.FILE );
     return new Promise(
         checkFile(filepath) //got function from factory
-    ).then( ()  => 
-        sendFile(seRes,filepath)
+    ).then( (stat)  => sendFile(
+                        Object.assign({path:filepath},stat)
+                        ,seRes
+                        ,clReq
+                        )
     ).catch(err => 
         sendError(seRes,err)
     );
 };
 
-function checkFile(somepath) {    
+function checkFile(somepath) {
+    let lstatobj = null;    
     return (resolve, reject) =>{
-        fs.access(somepath,fs.constants.R_OK, err =>{
+        fs.access(somepath,fs.constants.R_OK, err =>{            
             if( err ){             
                 log(`no such file or not available: ${somepath}. Got: ${err}  ` );
                 reject(err);
                 return;//prevent to run rest of code
             };
-            if( !fs.lstatSync(somepath).isFile() ){             
+
+
+            if( !(lstatobj = fs.lstatSync(somepath)).isFile() ){             
                 reject(new Error(`"${somepath}" is not a filename`));
                 return;//
              };    
-            resolve();
+            resolve(lstatobj);
         });        
     };
 };
@@ -100,42 +100,71 @@ function sendError(res,err){
 };
 
 
-function sendFile(res,filepath){
+
+function sendFile(stat,res,req){
     return new Promise((resolve,reject) => {
+        const ext = path.extname(stat.path).slice(1);
+        
+        mimes[ext](stat,res,req);
 
-        const ext = path.extname(filepath).slice(1);
-
-        const raw = fs.createReadStream(filepath);
-
-        if(mimeFns[mimeTypes[ext]](ext)!== "audio/mpeg"){
-
-            res.writeHead(200,{
-                "Content-Type": mimeFns[mimeTypes[ext]](ext) || "text/plain"
-                ,"Content-Encoding": "gzip"
-            });
-
-            raw
-            .pipe(zip.createGzip())
-            .pipe(res);
-        }else{
-            res.writeHead(206,{
-                "Content-Type": mimeFns[mimeTypes[ext]](ext) || "text/plain"
-                //,"Content-Encoding": "gzip"
-                ,"Accept-Ranges":"bytes"
-            });
-
-            raw
-            //.pipe(zip.createGzip())
-            .pipe(res);
-        };
 
         setImmediate(()=>{ //runs at the end of eventloop i.e. after i/o
-            log("file sent: " + filepath);
+            log("file sent: " + stat.path);
             resolve();
             return;
         });
     });
 };
+
+
+
+function fileSimple (ct,statsf,res,req) {
+
+    const raw = fs.createReadStream(statsf.path);
+    res.writeHead(200,{
+        "Content-Type": ct
+        ,"Content-Encoding": "gzip"
+    });
+
+    raw
+    .pipe(zip.createGzip())
+    .pipe(res);
+};
+
+
+function parseHttpRange (rangestr) {
+    return  !rangestr   ? 
+            []          :
+            rangestr.trim()
+                    .replace("bytes=","")
+                    .split("-")
+                    .map( s =>+s );
+};
+
+function fileMedia (ct,statsf,res,req) {
+    let [frombyte, tobyte ] = parseHttpRange(req.headers.range );
+    frombyte = frombyte || 0 ;
+    tobyte   = tobyte   || statsf.size - 1 ;
+
+    const raw = fs.createReadStream(statsf.path ,{start : frombyte 
+                                                  ,end  : tobyte 
+                                                  });
+    res.writeHead(206,{
+        "Content-Type": ct
+        ,"Content-Range": `bytes ${frombyte}-${tobyte}/${statsf.size}`
+        ,"Accept-Ranges":"bytes"
+        ,"Content-Size": "" + tobyte - frombyte
+    });
+
+
+    raw
+    .pipe(res);
+    return;
+
+};    
+
+ 
+
 
 
 //http.createServer expects similar function:

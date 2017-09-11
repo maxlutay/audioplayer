@@ -35,10 +35,10 @@ module.exports =
         toPercent: (val)=> Math.round(val*100,0) + "%"
         ,pick: function(event) {
             this.deciding = false;
-            this.$emit("timeset", event.x / this.barwidth );
+            this.$emit("timefix", event.x / this.barwidth );
         }
         ,check: function(event) {
-            this.$emit("timetmp", event.x / this.barwidth );
+            this.$emit("timeset", event.x / this.barwidth );
         }
 
     }

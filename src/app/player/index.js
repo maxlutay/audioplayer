@@ -5,18 +5,20 @@ const Vue = require("vue/dist/vue.js");
 Vue.component("player",{
     template: `
         <div class="player" 
-        @mouseenter="status.bold=true" 
-        @mouseleave="status.bold=false"
+         @mouseenter="status.bold=true" 
+         @mouseleave="status.bold=false"
         >
             <timebar class="player__timeline" 
-            :class="{player__timeline_hovered:status.bold}"
+             :class="{player__timeline_hovered:status.bold}"
+             @timeset=""
+             @timefix=""
             ></timebar>
             <div class="player__controls player__controls_left"
             >
-                <ctrl @click="prev()">prev</ctrl>
-                <ctrl @click="toggle"
+                <ctrl @click.native="prev">prev</ctrl>
+                <ctrl @click.native="toggle"
                 > 
-                    {{ (!status.pause ? "play" : "pause") }}
+                    {{ !element.paused ? "play" : "pause" }}
                 </ctrl>
                 <ctrl @click.native="next">next</ctrl>
             </div>
@@ -31,9 +33,9 @@ Vue.component("player",{
                 <ctrl @click="mute">volume</ctrl>
             </div>
             <core 
-            ref="audio"
-            :url="gurl()" 
-            @ended="next"
+             ref="audio"
+             :url="gurl()" 
+             @ended.native="next()"
             ></core>
             </div>
             `
@@ -71,13 +73,12 @@ Vue.component("player",{
                         ,name:"Eeee"
                         ,performer:"Ffff"
                         ,url:"/data-0 (2).mp3" 
-                        ,length:6582
+                        ,length:undefined
                     }
                 ]
             }
             ,status:{
                 bold:false
-                ,pause:true
                 ,volume:100
                 ,mix: false
                 ,repeat: false
@@ -90,33 +91,36 @@ Vue.component("player",{
                     ,play:0
                 }
             }
-            ,element:null
+            ,element:{}
         };
     }
     
-
-    ,updated: function() {
+    ,updated:  function() {
         this.$nextTick( () => {
+            console.log(this);
             this.element = this.$refs.audio.$el;
         });
     }
+    //,updated: this.mounted
     ,methods: {
         log:(...arg) => console.log.call(null,["log:"].concat(arg).join())
         ,next: function() {
-            let c = this.status.current //link
+            let c = this.status.current 
             ,   l = this.list.tracks.length;
-            this.status.current = c>=0 && c < (l - 1) ? c+1 : 0;
-//            this.start(0);
+            this.status.current = (c>=0 && c < (l - 1)) ? c+1 : 0;
+            this.element.play();
         }
         ,toggle: function() {
-            let flag = status.pause;
-
+            if(this.element.paused){
+                this.element.play();
+            }else{
+                this.element.pause();
+            };
         }
         ,prev: function() {
             let c = this.status.current 
             ,   l = this.list.tracks.length;
-            this.status.current = c > 0 ? c-1 : l-1;
-            //            this.start(0);
+            this.status.current = (c > 0) ? c-1 : l-1;
         }
         ,mix:()=>undefined
         ,repeat:()=>undefined

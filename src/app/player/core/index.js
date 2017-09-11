@@ -1,10 +1,9 @@
 module.exports = {
     template: `
-        <audio class="player__core" :src="url" autoplay preload="auto" controls
+        <audio class="player__core" :src="url" preload="auto" autoplay controls
         ></audio>
     `
     ,props: [
         "url"
     ]
-
 }
