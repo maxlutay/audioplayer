@@ -6,6 +6,16 @@ require("./feed");
 
 var app = new Vue({
     el: ".app"
+    ,template: `
+    <div class="app"
+         @mousemove="onmm" 
+         @mouseup="onmu"
+         >
+         <topping></topping>    
+         <tracks></tracks>
+         <player :wind="wind" ></player>
+    </div>
+    `
     ,data: {
         text: "audioplayer"
         ,logged: false

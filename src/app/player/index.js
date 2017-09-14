@@ -11,9 +11,9 @@ Vue.component("player",{
             <timebar class="player__timeline" 
              :class="{player__timeline_hovered:status.bold}"
              :loaded="status.progress.load"
-             :played="status.progress.play"
+             :played="tplayed()"
              :length="core.duration"
-
+             :current="core.currentTime"
              ref="tb"
             ></timebar>
             <div class="player__controls player__controls_left"
@@ -45,8 +45,8 @@ Vue.component("player",{
              ref="audio"
              :url="url" 
              :autoplay="status.autoplay"
-             @ended.native="log('end') || next()"
-             @timeupdate.native="!status.deciding && tset(percentage(core.currentTime,core.duration))"
+             @ended.native="next()"
+             @timeupdate.native="ontimeupdate"
              @progress.native="status.progress.load=percentage(core.buffered.end(0),core.duration)"
             ></core>
             </div>
@@ -56,7 +56,9 @@ Vue.component("player",{
                 ,ctrl:  require("./control")
                 ,core:  require("./core")
             }
-            
+     ,props:[
+         "wind"
+     ]
      ,data: function(){
         return {
             list:{
@@ -119,6 +121,7 @@ Vue.component("player",{
             this.core = this.$refs.audio.$el;
         });
     }
+
     ,computed: {
         url() {
             return this.list.tracks[this.status.current].url || "";
@@ -167,14 +170,36 @@ Vue.component("player",{
             this.status.progress.play = perc;
         }
         ,tfix(perc) {
-            console.log("tfix",perc);
             this.status.progress.play = perc;
             this.core.currentTime = this.core.duration * perc;
         }
         ,trset() {
             this.status.progress.play = this.core.currentTime/this.core.duration;
         }
-        ,percentage: (val,base) => val/base
+        ,percentage: (val,base) => !base ? 0 : val/base
+        ,ontimeupdate(){
+            if(!this.$props.wind.state){
+                this.tset(this.percentage(this.core.currentTime,this.core.duration));
+            };
+        }
+        ,tplayed(){
+            let ret;
+            if(this.$refs.tb){
+                ret = this.percentage(this.$props.wind.x,this.$refs.tb.$el.getBoundingClientRect().width) ;
+            };
+            if(this.$props.wind.state){
+                this.status.deciding = true;
+                return ret;
+            };
+
+            if( this.status.deciding && !this.$props.wind.state){
+                this.status.deciding = false;
+                this.tfix(ret);
+            };
+            
+            
+            return this.status.progress.play;
+        }
 
     }
 });
