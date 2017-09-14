@@ -32,6 +32,7 @@ body, body * {
     background: #C4D7FF;
     display: flex;
     justify-content: space-between;
+    cursor: default;
 }
 
 
@@ -41,6 +42,7 @@ body, body * {
     width: 100%;
     height: var(--timeline-height);
     transition: height 200ms, bottom 200ms;
+    
 }
 
 .player__timeline_hovered{
@@ -50,7 +52,7 @@ body, body * {
 
 .progress{
     background: #87FFCE;
-    cursor: pointer;
+    /* cursor: col-resize; */
     user-select: none;
 }
 .progress__load
@@ -66,7 +68,7 @@ body, body * {
 .progress__play{
     background: #FE7C4D;
     z-index: 10;
-    transition: width 300ms;
+    transition: width 50ms;
 }
 
 .progress__current
@@ -107,6 +109,12 @@ body, body * {
 .player__control:hover{
     background: #FE7B4B;
 }
+
+.player__control_active{
+    background: #FE7B4B;
+}
+
+
 
 .player__controls{
     height: 100%;

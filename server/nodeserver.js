@@ -15,17 +15,20 @@ const apicallback = require("./api");
 const routes = {
     "file":filecallback
     ,"api": apicallback
+    //,"db": dbcallback
 }
 
 
 
 const router = (clReq, seRes) => {
 
-    return  (routes[decodeURI(url.parse(clReq.url)
+    return  (routes[
+        decodeURI(url.parse(clReq.url)
         .pathname
         .slice(1)
         .split("/")[0]
-    )]|| filecallback).call(null,clReq,seRes); 
+                )
+             ]|| filecallback).call(null,clReq,seRes); 
 };
 
 

@@ -10,17 +10,20 @@ Vue.component("player",{
         >
             <timebar class="player__timeline" 
              :class="{player__timeline_hovered:status.bold}"
-             @timeset=""
-             @timefix=""
+             :loaded="status.progress.load"
+             :played="status.progress.play"
+             :length="core.duration"
+
+             ref="tb"
             ></timebar>
             <div class="player__controls player__controls_left"
             >
                 <ctrl @click.native="prev">prev</ctrl>
                 <ctrl @click.native="toggle"
                 > 
-                    {{ !element.paused ? "play" : "pause" }}
+                    {{ !!core.paused ? "play" : "pause" }}
                 </ctrl>
-                <ctrl @click.native="next">next</ctrl>
+                <ctrl @click.native="next(true)">next</ctrl>
             </div>
             <div class="player__track"
             >
@@ -28,14 +31,23 @@ Vue.component("player",{
             </div>
             <div class="player__controls player__controls_right"
             >
-                <ctrl @click="mix">mix</ctrl>
-                <ctrl @click="repeat">repeat</ctrl>
-                <ctrl @click="mute">volume</ctrl>
+                <ctrl 
+                @click.native="status.mix=!status.mix"
+                :class="{player__control_active:status.mix}"
+                >mix</ctrl>
+                <ctrl 
+                @click.native="status.repeat=status.repeat < 2 ? status.repeat + 1 : 0"
+                :class="{player__control_active:status.repeat}"
+                >repeat {{status.repeat}}</ctrl>
+                <ctrl @click.native="mute">volume</ctrl>
             </div>
             <core 
              ref="audio"
-             :url="gurl()" 
-             @ended.native="next()"
+             :url="url" 
+             :autoplay="status.autoplay"
+             @ended.native="log('end') || next()"
+             @timeupdate.native="!status.deciding && tset(percentage(core.currentTime,core.duration))"
+             @progress.native="status.progress.load=percentage(core.buffered.end(0),core.duration)"
             ></core>
             </div>
             `
@@ -45,9 +57,7 @@ Vue.component("player",{
                 ,core:  require("./core")
             }
             
-/*             @timeupdate=""
-            @canplay=""  
- */    ,data: function(){
+     ,data: function(){
         return {
             list:{
                 id:0
@@ -59,21 +69,30 @@ Vue.component("player",{
                         ,performer:"Bbbb"
                         //just example url
                         ,url:"/data-0.mp3"
-                        ,length:undefined
                     }
                     ,{
                         id:1001
                         ,name:"Cccc"
                         ,performer:"Dddd"
                         ,url:"/data-0 (1).mp3"
-                        ,length:undefined
                     }
                     ,{
                         id:1002
                         ,name:"Eeee"
                         ,performer:"Ffff"
                         ,url:"/data-0 (2).mp3" 
-                        ,length:undefined
+                    }
+                    ,{
+                        id:1003
+                        ,name:"Ffff"
+                        ,performer:"Gggg"
+                        ,url:"/data-0 (3).mp3"
+                    }
+                    ,{
+                        id:1004
+                        ,name:"Eeee"
+                        ,performer:"Ffff"
+                        ,url:"/data-0 (4).mp3"
                     }
                 ]
             }
@@ -81,139 +100,81 @@ Vue.component("player",{
                 bold:false
                 ,volume:100
                 ,mix: false
-                ,repeat: false
+                ,repeat: 0
                 ,deciding:false 
-                
-                ,current: -1
-                
+                ,autoplay:false
+
+                ,current: 0                
                 ,progress:{
                     load: 0
                     ,play:0
                 }
             }
-            ,element:{}
+            ,core:{}
         };
     }
     
-    ,updated:  function() {
+    ,mounted:  function() {
         this.$nextTick( () => {
-            console.log(this);
-            this.element = this.$refs.audio.$el;
+            this.core = this.$refs.audio.$el;
         });
     }
-    //,updated: this.mounted
+    ,computed: {
+        url() {
+            return this.list.tracks[this.status.current].url || "";
+        }
+    }
     ,methods: {
         log:(...arg) => console.log.call(null,["log:"].concat(arg).join())
-        ,next: function() {
+        ,next(force) {
             let c = this.status.current 
             ,   l = this.list.tracks.length;
-            this.status.current = (c>=0 && c < (l - 1)) ? c+1 : 0;
-            this.element.play();
+            
+            if(2 == this.status.repeat && !force){
+                this.core.currentTime = 0;
+                this.core.play();
+                return;
+            };
+
+            if( c !== (l - 1) 
+                || 1 == this.status.repeat 
+                || !!force 
+            ){
+                this.status.current = (c>=0 && c < (l - 1)) ? c+1 : 0;
+            };
+
         }
-        ,toggle: function() {
-            if(this.element.paused){
-                this.element.play();
+
+        ,toggle() {
+            if(this.core.paused){
+                this.core.play();
+                this.status.autoplay = true;
             }else{
-                this.element.pause();
+                this.core.pause();
+                this.status.autoplay = false;
             };
         }
-        ,prev: function() {
+        ,prev() {
             let c = this.status.current 
             ,   l = this.list.tracks.length;
             this.status.current = (c > 0) ? c-1 : l-1;
+            this.status.ready && this.core.play();            
         }
-        ,mix:()=>undefined
-        ,repeat:()=>undefined
-        ,mute:()=>undefined
-        
-        ,gurl: function () {
-            let rs = this.list.tracks[this.status.current];
-            console.log("gurl", rs);            
-            return !!rs ? rs.url : "";
-        }
- 
-        /* 
-        toStrPercentage: (num) => (num*100).toFixed(2) + "%"
-        ,percentage: (val,base) => val/base
-        ,settime: function(percent) {
-            console.log(this.list.tracks[this.current].length);
-            this.element.$el.currentTime = percent*this.list.tracks[this.current].length;
-        }
-        ,getlength:function(c= this.current) {
-            return c < 0 ?  "x:xx" : this.formatrange(this.list.tracks[c].length) ;
-        }
-        ,getsrc:function(c=this.current) {
-            console.log("get src");
-            return c < 0 ? "" : this.list.tracks[c].url;
-        }
-        ,formatrange:function(sec = 0) {
-            return `${Math.floor(sec/60)|| "0"}:${Math.floor(sec%60)}`
-        }
-        ,unformatrange:function(str) {
-            let arr = str.split(":");
-            return arr.length == 1 ? arr[0] : (+arr[0]*60 + +arr[1]);
-        }
-        ,start:function(percent) {
-                      
-            this.load(this.list.tracks[this.current].url);
-            if(!!percent){ 
-                this.element.$el.pause();
 
-                this.element.$el.currentTime = percent* this.list.tracks[this.current].length;
-                console.log(this.element.$el.currentTime, this.element.$el.duration);
-            };
-            if(percent == 0){
-                this.element.$el.currentTime = 0;
-            };
-            this.flags.pause = false;
-            this.element.$el.play();
-          
-            //
-            console.log(`playing from ${percent} track ${this.current} ${this.list.tracks[this.current].id}`);
+        ,mute:()=>undefined
+        ,tset:function(perc) {
+            //console.log("tset",perc);
+            this.status.progress.play = perc;
         }
-        ,stop:function() {
-            this.flags.pause = true;
-            this.element.$el.pause();
-            console.log(`track ${this.current} ${this.list.tracks[this.current].id} stopped`);
+        ,tfix(perc) {
+            console.log("tfix",perc);
+            this.status.progress.play = perc;
+            this.core.currentTime = this.core.duration * perc;
         }
-        ,load:function(url) {
-            console.log(`loading ${url}`);
+        ,trset() {
+            this.status.progress.play = this.core.currentTime/this.core.duration;
         }
-        ,next: function() {
-            this.current = (this.current > this.list.tracks.length - 2) ?                                                 0 :
-                                             this.current + 1 
-                          ;
-            this.start(0);
-        }
-        ,prev: function() {
-            this.current = ( this.current < 1) ? 
-                this.list.tracks.length - 1 :
-                           this.current - 1
-                          ;
-            this.start(0);
-        }
-        ,ptoggle: function() {
-            if (this.flags.pause){ 
-                this.start(this.progress.play);
-            }else{
-                this.stop();
-            };
-        }
-        ,coreupdate:function(audioelement) {
-            console.log(this.element = audioelement);
-        }
-        ,tracksetup:function() {
-            this.list.tracks[this.current].length = this.$refs.audio.$el.duration;
-        }
-        ,playupdate:function(){
-             if(!this.deciding){ 
-    //no need for throttle
-                this.progress.play = this.$refs.audio.$el.currentTime/this.$refs.audio.$el.duration;//ms -> %
-             }; 
-        }
-        ,loadupdate:function() {
-            this.progress.load = this.$refs.audio.$el.buffered.end(this.$refs.audio.$el.buffered.length - 1)/this.$refs.audio.$el.duration;//ms -> %
-        } */
+        ,percentage: (val,base) => val/base
 
     }
 });
