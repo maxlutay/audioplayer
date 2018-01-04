@@ -5,7 +5,7 @@ const url = require("url");
 //
 
 //custom
-require("./params");
+const procParams = require("./params")();
 const log = require("./logger");
 const filecallback = require("./static");
 const apicallback = require("./api");
@@ -34,7 +34,7 @@ const router = (clReq, seRes) => {
 
 
 
-log("running on port ", log.q(global.procParams.PORT,`'`), " in directory ", log.q(global.procParams.BASE,`'`), " with start file ", log.q(global.procParams.FILE,`'`) );
+log("running on port ", log.q(procParams.PORT,`'`), " in directory ", log.q(procParams.BASE,`'`), " with start file ", log.q(procParams.FILE,`'`) );
 
 
 
@@ -45,7 +45,7 @@ log("running on port ", log.q(global.procParams.PORT,`'`), " in directory ", log
 //}
 //"""
 
-http.createServer(router).listen( global.procParams.PORT );
+http.createServer(router).listen( procParams.PORT );
 
 
 
