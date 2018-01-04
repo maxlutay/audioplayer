@@ -6,6 +6,8 @@ const url = require("url");
 const log = require("./logger");
 const sendError = require("./error");
 
+const procParams = require("./params")();
+
 
 
 const mimes = {
@@ -21,12 +23,12 @@ const mimes = {
 
 
 const callback = (clReq,seRes) => {
-    let filepath = path.join( global.procParams.BASE 
+    let filepath = path.join( procParams.BASE 
                               ,decodeURI(
                                   url.parse(clReq.url)
                                      .pathname
                                      .slice(1)
-                                ) || global.procParams.FILE 
+                                ) || procParams.FILE 
                             );
     return new Promise(
         checkFile(filepath) //got function from factory
