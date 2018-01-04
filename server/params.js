@@ -5,7 +5,6 @@ const path = require("path");
 /** 
  *
  * please, require only once
- * !! uses global !!
  * 
  */
 
@@ -17,7 +16,7 @@ const defaultParams = {
 
 
 
-global.procParams = Object.assign(defaultParams);
+let procParams = Object.assign(defaultParams);
 
 
 //log(">>>",process.argv,"<<<<<<<<");
@@ -25,23 +24,23 @@ global.procParams = Object.assign(defaultParams);
 
 if( !!process.argv[2] ){
     if( /^\d{4,5}$/g.test(process.argv[2]) ){
-        global.procParams.PORT = +process.argv[2];
+        procParams.PORT = +process.argv[2];
         if ( !!process.argv[3] ){
-            fs.accessSync(global.procParams.BASE = path.resolve(global.procParams.BASE + process.argv[3].trim())
+            fs.accessSync(procParams.BASE = path.resolve(procParams.BASE + process.argv[3].trim())
             );
         };
     }else {
-        fs.accessSync(global.procParams.BASE = path.resolve(global.procParams.BASE + process.argv[2].trim())
+        fs.accessSync(procParams.BASE = path.resolve(procParams.BASE + process.argv[2].trim())
         );
-        log(global.procParams.BASE);
+        log(procParams.BASE);
     };
     if( process.argv[3] && /^\d{4,5}$/g.test(process.argv[3]) ){
-        global.procParams.PORT = +process.argv[3];
+        procParams.PORT = +process.argv[3];
     }
     
 };
 //possibility of more proc args and more complex algo wuld b nidid
 
-
+module.exports = () => procParams;
 
 
