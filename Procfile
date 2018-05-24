@@ -1,1 +1,1 @@
-web: npm run b && node ./server/nodeserver.js /dist $PORT
+web: webpack --quiet && node ./server/nodeserver.js /dist $PORT
