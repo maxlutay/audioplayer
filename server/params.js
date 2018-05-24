@@ -1,7 +1,7 @@
 const process = require("process");
 const fs = require("fs");
 const path = require("path");
-
+//const log = require("./logger");
 /** 
  *
  * please, require only once
@@ -32,7 +32,7 @@ if( !!process.argv[2] ){
     }else {
         fs.accessSync(procParams.BASE = path.resolve(procParams.BASE + process.argv[2].trim())
         );
-        log(procParams.BASE);
+        //log(procParams.BASE);
     };
     if( process.argv[3] && /^\d{4,5}$/g.test(process.argv[3]) ){
         procParams.PORT = +process.argv[3];
