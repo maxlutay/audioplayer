@@ -1,1 +1,1 @@
-web: webpack --quiet && node ./server/nodeserver.js /dist $PORT
+web: webpack && node ./server/nodeserver.js /dist $PORT
