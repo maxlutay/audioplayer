@@ -1,3 +1,3 @@
 this is audioplayer in Vue2JS
 
-barebone, available here https://epic-payne-7911ff.netlify.com/
+barebone, available here your-audio.netlify.com
