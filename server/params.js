@@ -21,7 +21,7 @@ let procParams = Object.assign(defaultParams);
 
 //log(">>>",process.argv,"<<<<<<<<");
 
-
+//  !!!! bad code  !!!!!
 if( !!process.argv[2] ){
     if( /^\d{4,5}$/g.test(process.argv[2]) ){
         procParams.PORT = +process.argv[2];
