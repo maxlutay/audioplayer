@@ -22,10 +22,8 @@ const routes = {
 
 const router = (clReq, seRes) => {
 
-    return  ( routes [decodeURI(
-        url.parse(clReq.url).pathname.slice(1).split("/")[0]
-                    )] 
-            || filecallback ).call(null,clReq,seRes); 
+    const r = decodeURI( url.parse(clReq.url).pathname.slice(1).split("/")[0] );
+    return  ( routes [r] || filecallback ).call(null,clReq,seRes); 
 };
 
 
