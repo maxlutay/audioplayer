@@ -105,11 +105,11 @@ body, body * {
     margin: 1vh;
     transition: background 200ms   ;
 }
-
+@media(hover: hover) and (pointer: fine) {
 .player__control:hover{
     background: #FE7B4B;
 }
-
+}
 .player__control_active{
     background: #FE7B4B;
 }
